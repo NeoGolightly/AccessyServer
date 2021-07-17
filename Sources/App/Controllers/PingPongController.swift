@@ -10,7 +10,7 @@ import Fluent
 
 struct PingPongController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    routes.get("api", "ping", use: getPong)
+    routes.get("ping", use: getPong)
   }
   
   func getPong(_ req: Request) -> EventLoopFuture<String> {

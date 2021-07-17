@@ -13,11 +13,14 @@ func routes(_ app: Application) throws {
 
   try app.group("api", configure: { builder in
     try builder.register(collection: NodesController())
-    try builder.register(collection: SegmentsController())
+    try builder.register(collection: PathSectionsController())
+    try builder.register(collection: SidewalksController())
+    try builder.register(collection: InfrastructureController())
+    try builder.register(collection: PingPongController())
   })
   
-  try app.register(collection: PingPongController())
-  try app.register(collection: TodoController())
+  
+  
   
   print("ALL ROUTES: \(app.routes.all)")
 }

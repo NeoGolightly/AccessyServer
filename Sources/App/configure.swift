@@ -32,16 +32,20 @@ public func configure(_ app: Application) throws {
   ), as: .psql)
   
   app.migrations.add(NeoEnablePostGISMigration())
-  app.migrations.add(CreateRoadSegment())
-  app.migrations.add(CreateNode())
+  app.migrations.add(CreatePathSection())
+  app.migrations.add(CreateSidewalk())
+  app.migrations.add(CreatePathNode())
   app.migrations.add(CreateNodeRoadSegmentPivot())
   app.migrations.add(CreateLocationTest())
   
-  try app.autoRevert().wait()
-  try app.autoMigrate().wait()
+
   // register routes
   try routes(app)
-  
+    
+  if app.environment == .testing || app.environment == .development {
+    try app.autoRevert().wait()
+  }
+  try app.autoMigrate().wait()
   
 }
 
