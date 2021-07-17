@@ -8,26 +8,26 @@
 import Fluent
 import FluentPostGIS
 
-struct CreateNode: Migration {
+struct CreatePathNode: Migration {
   func prepare(on database: Database) -> EventLoopFuture<Void> {
-    database.schema(Node.v0_0_1_Beta.schema)
+    database.schema(PathNode.v0_0_1_Beta.schema)
       .id()
-      .field(Node.v0_0_1_Beta.coordiante, GeographicPoint2D.dataType, .required)
-      .field(Node.v0_0_1_Beta.createdAt, .datetime)
-      .field(Node.v0_0_1_Beta.updatedAt, .datetime)
-      .field(Node.v0_0_1_Beta.deletedAt, .datetime)
-      .unique(on: Node.v0_0_1_Beta.coordiante, name: "node already exists and should be unique")
+      .field(PathNode.v0_0_1_Beta.coordiante, GeographicPoint2D.dataType, .required)
+      .field(PathNode.v0_0_1_Beta.createdAt, .datetime)
+      .field(PathNode.v0_0_1_Beta.updatedAt, .datetime)
+      .field(PathNode.v0_0_1_Beta.deletedAt, .datetime)
+      .unique(on: PathNode.v0_0_1_Beta.coordiante, name: "PathNode already exists and should be unique")
       .create()
   }
   
   func revert(on database: Database) -> EventLoopFuture<Void> {
-    database.schema(Node.v0_0_1_Beta.schema).delete()
+    database.schema(PathNode.v0_0_1_Beta.schema).delete()
   }
 }
 
-extension Node {
+extension PathNode {
   enum v0_0_1_Beta {
-    static let schema: String = "nodes"
+    static let schema: String = "path_nodes"
     static let id = FieldKey(stringLiteral: "id")
     static let coordiante = FieldKey(stringLiteral: "coordinate")
     static let createdAt = FieldKey(stringLiteral: "created_at")
