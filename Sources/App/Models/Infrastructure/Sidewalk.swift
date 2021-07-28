@@ -11,17 +11,14 @@ import FluentPostGIS
 
 extension Sidewalk: Content {}
 
-final class Sidewalk: Model {
+final class Sidewalk: Model, InfrastructureType {
   static var schema: String = Sidewalk.v0_0_1_Beta.schema
   
   @ID(key: .id)
   var id: UUID?
   
   @Field(key: Sidewalk.v0_0_1_Beta.pathCoordinates)
-  var pathCoordinates: [Coordinate]
-  
-  @Field(key: Sidewalk.v0_0_1_Beta.nodesCoordinates)
-  var nodesCoordinate: GeographicGeometryCollection2D
+  var pathCoordinates: GeometricLineString2D
   
   @Timestamp(key: Sidewalk.v0_0_1_Beta.createdAt, on: .create)
   var createdAt: Date?
@@ -35,10 +32,19 @@ final class Sidewalk: Model {
   init(){}
   
   init(id: UUID? = nil,
-       pathCoordinates: [Coordinate] = [],
-       nodesCoordinate: GeographicGeometryCollection2D) {
+       pathCoordinates: GeometricLineString2D) {
     self.id = id
     self.pathCoordinates = pathCoordinates
-    self.nodesCoordinate = nodesCoordinate
+  }
+}
+
+
+extension Sidewalk: ResponseConvertable {
+  func toResponse() -> SidewalkResponse {
+    SidewalkResponse(id: self.id,
+                     pathCoordinates: self.pathCoordinates.toCoordinates(),
+                     createdAt: self.createdAt,
+                     updatedAt: self.updatedAt,
+                     deletedAt: self.deletedAt)
   }
 }

@@ -10,6 +10,9 @@ import Vapor
 enum APIError {
   case incorrectPointCount
   case incorrectNodesCount
+  case firstAndLastPointCanNotBeEqual
+  case sidewalkAlreadyExists
+  case intersectionNodeAlreadyExists
 }
 
 extension APIError: AbortError {
@@ -19,6 +22,12 @@ extension APIError: AbortError {
       return "Point count must be greater or equal two"
     case .incorrectNodesCount:
       return "Nodes count must be two"
+    case .firstAndLastPointCanNotBeEqual:
+      return "First and last point can not be equal"
+    case .sidewalkAlreadyExists:
+      return "Sidewalk already exists"
+    case .intersectionNodeAlreadyExists:
+      return "Intersection node already exists"
     }
   }
   

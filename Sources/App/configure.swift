@@ -32,12 +32,14 @@ public func configure(_ app: Application) throws {
   ), as: .psql)
   
   app.migrations.add(NeoEnablePostGISMigration())
-  app.migrations.add(CreatePathSection())
-  app.migrations.add(CreateSidewalk())
-  app.migrations.add(CreatePathNode())
-  app.migrations.add(CreateNodeRoadSegmentPivot())
-  app.migrations.add(CreateLocationTest())
   
+  app.migrations.add(CreateSidewalk())
+  app.migrations.add(CreateIntersectionNode())
+ 
+  
+  //Sidewalk Model Middleware
+  app.databases.middleware.use(SidewalkMiddleware(), on: .psql)
+  app.databases.middleware.use(IntersectionNodeMiddleware(), on: .psql)
 
   // register routes
   try routes(app)
