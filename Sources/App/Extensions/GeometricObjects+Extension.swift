@@ -6,6 +6,13 @@
 //
 
 import FluentPostGIS
+import AccessyDataTypes
+
+extension GeometricPoint2D {
+  init(coordinate: Coordinate) {
+    self.init(x: coordinate.longitude, y: coordinate.latitude)
+  }
+}
 
 extension GeometricLineString2D {
   init(coordinates: [Coordinate]) {
@@ -15,6 +22,4 @@ extension GeometricLineString2D {
   func toCoordinates() -> [Coordinate] {
     points.map{ Coordinate(geometricPoint2D: $0) }
   }
-  
 }
-

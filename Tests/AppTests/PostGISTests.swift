@@ -25,17 +25,17 @@ final class PostGISTests: XCTestCase {
     let point1 = GeographicPoint2D(longitude: 10.42622633681657, latitude: 51.909575619490916)
     let point2 = GeographicPoint2D(longitude: 10.426269308514238, latitude: 51.909465831118)
     
-    let location1 = LocationTest(location: point1)
-    let location2 = LocationTest(location: point2)
-    try location1.save(on: app.db).wait()
-    try location2.save(on: app.db).wait()
-    
-    let all = LocationTest.query(on: app.db).all()
-    print(try all.wait().count)
-    let search = try LocationTest.query(on: app.db).filterGeometryDistanceWithin(\.$location, point1, 13).all().wait()
-    print(search)
-//    print(search.map{$0.location.geometry.latitude})
-    print(search.first?.location.latitude)
+//    let location1 = LocationTest(location: point1)
+//    let location2 = LocationTest(location: point2)
+//    try location1.save(on: app.db).wait()
+//    try location2.save(on: app.db).wait()
+//    
+//    let all = LocationTest.query(on: app.db).all()
+//    print(try all.wait().count)
+//    let search = try LocationTest.query(on: app.db).filterGeometryDistanceWithin(\.$location, point1, 13).all().wait()
+//    print(search)
+////    print(search.map{$0.location.geometry.latitude})
+//    print(search.first?.location.latitude)
     
   }
 }

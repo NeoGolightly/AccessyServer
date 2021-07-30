@@ -7,14 +7,27 @@
 
 import Vapor
 
+///////////////////////////////////////////////////////////////
+///
+///
+///   REQUESTS
+///
+///
+///////////////////////////////////////////////////////////////
 
-struct CoordinateWithRadiusData: Content {
+
+///
+struct CreateSidewalkData: PathResponseRepresentable, Codable {
+  let pathCoordinates: [Coordinate]
+}
+
+struct CenterCoordinateRequestData: Content {
   let latitude: Double
   let longitude: Double
   let radius: Double
 }
 
-struct SidewalkRequestData: Content {
-  let pathCoordinates: [Coordinate]
-  let intersectionNodes: [String]
-}
+//struct SidewalkRequestData: Content {
+//  let pathCoordinates: [Coordinate]
+//  let intersectionNodes: [String]
+//}

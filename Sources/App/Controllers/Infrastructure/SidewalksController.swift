@@ -9,6 +9,9 @@ import Vapor
 import Fluent
 import FluentPostGIS
 
+extension Sidewalk: Content {}
+extension CreateSidewalkData: Content {}
+
 
 struct SidewalksController: RouteCollection{
   func boot(routes: RoutesBuilder) throws {
@@ -19,48 +22,50 @@ struct SidewalksController: RouteCollection{
     }
   }
   
-  func getAllHandler(req: Request) -> EventLoopFuture<[SidewalkResponse]> {
-    Sidewalk.query(on: req.db).all()
+  func getAllHandler(req: Request) -> EventLoopFuture<[Sidewalk]> {
+    SidewalkDBModel.query(on: req.db).all()
       .mapEach{
-        SidewalkResponse(id: $0.id,
-                         pathCoordinates: $0.pathCoordinates.toCoordinates(),
-                         createdAt: $0.createdAt,
-                         updatedAt: $0.updatedAt,
-                         deletedAt: $0.deletedAt)
+        Sidewalk(id: $0.id,
+                 pathCoordinates: $0.pathCoordinates.toCoordinates(),
+                 createdAt: $0.createdAt,
+                 updatedAt: $0.updatedAt,
+                 deletedAt: $0.deletedAt)
     }
   }
   
   
   
-  func createHandler(req: Request) throws -> EventLoopFuture<SidewalkResponse> {
-    let sidewalkRequest = try req.content.decode(SidewalkRequestData.self)
-    guard let nodeACoordinate = sidewalkRequest.pathCoordinates.first,
-          let nodeBCoordinate = sidewalkRequest.pathCoordinates.last
+  func createHandler(req: Request) throws -> EventLoopFuture<Sidewalk> {
+    let sidewalkRequest = try req.content.decode(CreateSidewalkData.self)
+    guard let firstCoordinateInPath = sidewalkRequest.pathCoordinates.first,
+          let secondCoordinateInPath = sidewalkRequest.pathCoordinates.last
     else { return req.eventLoop.future(error: Abort(.badRequest) ) }
     
-    let sidewalk = Sidewalk(pathCoordinates: GeometricLineString2D(coordinates: sidewalkRequest.pathCoordinates))
-//    let intersectionNodeA = IntersectionNode(coordinate: GeometricPoint2D(coordinate: nodeACoordinate))
-//    let intersectionNodeB = IntersectionNode(coordinate: GeometricPoint2D(coordinate: nodeBCoordinate))
-    return req.db.transaction { database in
-      return sidewalk.save(on: database)
-        
-    }
-    .transform(to: sidewalk.toResponse())
+    let sidewalk = SidewalkDBModel(pathCoordinates: GeometricLineString2D(coordinates: sidewalkRequest.pathCoordinates))
+    let nodeA = getOrCreateIntersectionNode(database: req.db, nodeCoordinate: GeometricPoint2D(coordinate: firstCoordinateInPath))
+    let nodeB = getOrCreateIntersectionNode(database: req.db, nodeCoordinate: GeometricPoint2D(coordinate: secondCoordinateInPath))
+    
+    return  sidewalk
+      .save(on: req.db)
+      .flatMap{
+        [nodeA, nodeB].flatten(on: req.db.eventLoop)
+          .flatMap{ nodes -> EventLoopFuture<Void> in
+            nodes.forEach{ $0.adjacentInfrastructures.append(sidewalk.id!.uuidString) }
+            return nodes.map{ $0.save(on: req.db)}.flatten(on: req.db.eventLoop).map{ nodes }
+          }
+      }
+      .transform(to: sidewalk.toResponse())
   }
   
-  func saveOrAppendIntersectionNodes(database: Database, nodeACoordinate: GeometricPoint2D, nodeBCoordinate: GeometricPoint2D){
-    //
-//    let nodeAQuery = IntersectionNode.query(on: database).filterGeometryEquals(\.$coordinate, nodeACoordinate).count()
-//    let nodeBQuery = IntersectionNode.query(on: database).filterGeometryEquals(\.$coordinate, nodeBCoordinate).count()
-//    let nodesQuery = [nodeAQuery, nodeBQuery]
-//    return nodesQuery.flatten(on: database.eventLoop).flatMapEach(on: database) { queryResult in
-//      guard queryResult <= 1 else { return Abort(.badRequest) }
-//
-//    }
+  func getOrCreateIntersectionNode(database: Database, nodeCoordinate: GeometricPoint2D) -> EventLoopFuture<IntersectionNodeDBModel> {
+    let nodeSearchQuery = IntersectionNodeDBModel.query(on: database).filterGeometryEquals(\.$coordinate, nodeCoordinate)
+//    let nodeGuardCount = nodeSearchQuery.all().guard({ $0.count <= 1 }, else: Abort(.badRequest))
+    return nodeSearchQuery.first()
+      .unwrap(orReplace: IntersectionNodeDBModel(coordinate: nodeCoordinate, adjacentInfrastructures: []) )
   }
   
   func deleteHandler(req: Request) -> EventLoopFuture<HTTPStatus> {
-    Sidewalk.find(req.parameters.get("sidewalkID"), on: req.db)
+    SidewalkDBModel.find(req.parameters.get("sidewalkID"), on: req.db)
       .unwrap(or: Abort(.notFound))
       .flatMap{ sidewalk in
         sidewalk.delete(on: req.db)

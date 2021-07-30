@@ -8,40 +8,52 @@
 import Vapor
 import Fluent
 import FluentPostGIS
+import AccessyDataTypes
 
+extension Infrastructure: Content {}
 
 struct InfrastructureController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
     routes.group("infrastructure") { builder in
       builder.get(use: getAllHandler)
-      builder.get("region", use: searchInRegionHandler)
+      builder.get("withCenterCoordinate", use: getAllWithCenterCoordinateHandler)
     }
   }
   
-  func getAllHandler(req: Request) throws -> EventLoopFuture<InfrastructureResponse> {
-    let sidewalks = Sidewalk.query(on: req.db).all()
-    let intersectionNodes = IntersectionNode.query(on: req.db).all()
+  func getAllHandler(req: Request) throws -> EventLoopFuture<Infrastructure> {
+    let sidewalks = SidewalkDBModel.query(on: req.db).all()
+    let intersectionNodes = IntersectionNodeDBModel.query(on: req.db).all()
     
     return sidewalks.mapEach{ $0.toResponse() }
       .and(intersectionNodes.mapEach{ $0.toResponse() })
       .map{
-        InfrastructureResponse(sidewalks: $0, intersectionNodes: $1)
+        Infrastructure(sidewalks: $0,
+                       trafficLights: [],
+                       trafficIsland: [],
+                       zebraCrossing: [],
+                       pedestrianCrossing: [],
+                       intersectionNodes: $1)
       }
   }
   
-  func searchInRegionHandler(req: Request) throws -> EventLoopFuture<InfrastructureResponse> {
+  func getAllWithCenterCoordinateHandler(req: Request) throws -> EventLoopFuture<Infrastructure> {
     print(req.content)
     ///Decode request to CoordinateRegion
-    let coordinateWithRadius = try req.query.decode(CoordinateWithRadiusData.self)
+    let coordinateWithRadius = try req.query.decode(CenterCoordinateRequestData.self)
     ///Create GeographicPoint2D for querying all infrastructure objects (Sidewalks, TraffikLight …)
     let centerCoodinate = GeographicPoint2D(longitude: coordinateWithRadius.longitude, latitude: coordinateWithRadius.latitude)
     ///Search for all sidewalks from center coordinate (gisCoordinate) with radius
-    let sidewalkSearch = Sidewalk.query(on: req.db).filterGeometryDistanceWithin(\.$pathCoordinates, centerCoodinate, coordinateWithRadius.radius).all()
-    let intersectionNodesSearch = IntersectionNode.query(on: req.db).filterGeometryDistanceWithin(\.$coordinate, centerCoodinate, coordinateWithRadius.radius).all()
+    let sidewalkSearch = SidewalkDBModel.query(on: req.db).filterGeometryDistanceWithin(\.$pathCoordinates, centerCoodinate, coordinateWithRadius.radius).all()
+    let intersectionNodesSearch = IntersectionNodeDBModel.query(on: req.db).filterGeometryDistanceWithin(\.$coordinate, centerCoodinate, coordinateWithRadius.radius).all()
     return sidewalkSearch.mapEach{ $0.toResponse() }
     .and(intersectionNodesSearch.mapEach{ $0.toResponse() })
     .map{
-      InfrastructureResponse(sidewalks: $0, intersectionNodes: $1)
+      Infrastructure(sidewalks: $0,
+                     trafficLights: [],
+                     trafficIsland: [],
+                     zebraCrossing: [],
+                     pedestrianCrossing: [],
+                     intersectionNodes: $1)
     }
   }
 }

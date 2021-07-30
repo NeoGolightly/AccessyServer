@@ -11,24 +11,24 @@ import FluentPostGIS
 
 struct CreateSidewalk: Migration {
   func prepare(on database: Database) -> EventLoopFuture<Void> {
-    database.schema(Sidewalk.v0_0_1_Beta.schema)
+    database.schema(SidewalkDBModel.v0_0_1_Beta.schema)
       .id()
-      .field(Sidewalk.v0_0_1_Beta.pathCoordinates, GeometricLineString2D.dataType, .required)
+      .field(SidewalkDBModel.v0_0_1_Beta.pathCoordinates, GeometricLineString2D.dataType, .required)
 //      .field(Sidewalk.v0_0_1_Beta.nodesCoordinates, GeographicGeometryCollection2D.dataType, .required)
-      .field(Sidewalk.v0_0_1_Beta.createdAt, .datetime)
-      .field(Sidewalk.v0_0_1_Beta.updatedAt, .datetime)
-      .field(Sidewalk.v0_0_1_Beta.deletedAt, .datetime)
+      .field(SidewalkDBModel.v0_0_1_Beta.createdAt, .datetime)
+      .field(SidewalkDBModel.v0_0_1_Beta.updatedAt, .datetime)
+      .field(SidewalkDBModel.v0_0_1_Beta.deletedAt, .datetime)
       .create()
   }
   
   func revert(on database: Database) -> EventLoopFuture<Void> {
-    database.schema(Sidewalk.v0_0_1_Beta.schema).delete()
+    database.schema(SidewalkDBModel.v0_0_1_Beta.schema).delete()
   }
 }
 
 
 
-extension Sidewalk {
+extension SidewalkDBModel {
   enum v0_0_1_Beta {
     static let schema: String = "sidewalk"
     static let id = FieldKey(stringLiteral: "id")

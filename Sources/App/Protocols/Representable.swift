@@ -13,20 +13,20 @@ import Fluent
 
 typealias InfrastructureType = DateRepresentable & PathRepresentable & IDRepresentable
 
-protocol DateRepresentable {
+public protocol DateRepresentable {
   var createdAt: Date? { get }
   var updatedAt: Date? { get }
   var deletedAt: Date? { get }
 }
 
-protocol PathRepresentable {
+public protocol PathRepresentable {
   var pathCoordinates: GeometricLineString2D { get }
 }
 
-protocol IDRepresentable {
+public protocol IDRepresentable {
   var id: UUID? { get }
 }
 
-protocol AdjacentInfrastructuresRepresentable {
+public protocol AdjacentInfrastructuresRepresentable {
   var adjacentInfrastructures: [String] { get }
 }

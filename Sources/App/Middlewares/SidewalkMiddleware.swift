@@ -11,28 +11,28 @@ import WKCodable
 import FluentPostGIS
 
 struct SidewalkMiddleware: ModelMiddleware {
-  func create(model: Sidewalk, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
+  func create(model: SidewalkDBModel, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
     checkPointCount(model: model, db: db)
       .flatMap{ checkFirstAndLastCoordinateNotEqual(model: model, db: db) }
       .flatMap{ checkIfSidewalkAlreadyExists(model: model, db: db) }
       .flatMap{ next.create(model, on: db) }
   }
   
-  func update(model: Sidewalk, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
+  func update(model: SidewalkDBModel, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
     checkPointCount(model: model, db: db)
       .flatMap{ checkFirstAndLastCoordinateNotEqual(model: model, db: db) }
       .flatMap{next.update(model, on: db)}
     
   }
   
-  private func checkPointCount(model: Sidewalk, db: Database) -> EventLoopFuture<Void> {
+  private func checkPointCount(model: SidewalkDBModel, db: Database) -> EventLoopFuture<Void> {
     guard model.pathCoordinates.points.count >= 2 else {
       return db.eventLoop.future(error: APIError.incorrectPointCount)
     }
     return db.eventLoop.makeSucceededVoidFuture()
   }
   
-  private func checkFirstAndLastCoordinateNotEqual(model: Sidewalk, db: Database) -> EventLoopFuture<Void> {
+  private func checkFirstAndLastCoordinateNotEqual(model: SidewalkDBModel, db: Database) -> EventLoopFuture<Void> {
     guard model.pathCoordinates.points.first != model.pathCoordinates.points.last else {
       return db.eventLoop.future(error: APIError.firstAndLastPointCanNotBeEqual)
     }
@@ -40,8 +40,8 @@ struct SidewalkMiddleware: ModelMiddleware {
   }
   
   
-  private func checkIfSidewalkAlreadyExists(model: Sidewalk, db: Database) -> EventLoopFuture<Void> {
-    return Sidewalk.query(on: db).filterGeometryEquals(\.$pathCoordinates, model.pathCoordinates)
+  private func checkIfSidewalkAlreadyExists(model: SidewalkDBModel, db: Database) -> EventLoopFuture<Void> {
+    return SidewalkDBModel.query(on: db).filterGeometryEquals(\.$pathCoordinates, model.pathCoordinates)
       .all()
       .guard({ $0.isEmpty }, else: APIError.sidewalkAlreadyExists)
               .transform(to: db.eventLoop.makeSucceededVoidFuture())

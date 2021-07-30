@@ -6,6 +6,13 @@
 //
 
 import FluentPostGIS
+import AccessyDataTypes
+
+extension GeographicPoint2D {
+  init(coordinate: Coordinate) {
+    self.init(longitude: coordinate.longitude, latitude: coordinate.latitude)
+  }
+}
 
 extension GeographicLineString2D {
   init(coordinates: [Coordinate]) {
@@ -18,3 +25,9 @@ extension GeographicLineString2D {
   
 }
 
+
+extension GeographicGeometryCollection2D {
+  var allPoint2D: [GeographicPoint2D] {
+    geometries.compactMap{ $0 as? GeographicPoint2D}
+  }
+}

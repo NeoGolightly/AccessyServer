@@ -8,10 +8,10 @@
 import Vapor
 import Fluent
 
-struct Coordinate: Codable {
-  let latitude: Double
-  let longitude: Double
-}
+//struct Coordinate: Codable {
+//  let latitude: Double
+//  let longitude: Double
+//}
 
 
 

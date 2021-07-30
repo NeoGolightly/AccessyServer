@@ -8,6 +8,9 @@
 import Vapor
 import Fluent
 import FluentPostGIS
+import AccessyDataTypes
+
+extension IntersectionNode: Content {}
 
 struct IntersectionNodesController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
@@ -16,7 +19,7 @@ struct IntersectionNodesController: RouteCollection {
     }
   }
   
-  func getAllHandler(_ req: Request) -> EventLoopFuture<[IntersectionNodeResponse]>{
-    IntersectionNode.query(on: req.db).all().mapEach{ $0.toResponse() }
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[IntersectionNode]>{
+    IntersectionNodeDBModel.query(on: req.db).all().mapEach{ $0.toResponse() }
   }
 }

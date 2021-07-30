@@ -10,22 +10,23 @@ import FluentPostGIS
 
 struct CreateIntersectionNode: Migration {
   func prepare(on database: Database) -> EventLoopFuture<Void> {
-    database.schema(IntersectionNode.v0_0_1_Beta.schema)
+    database.schema(IntersectionNodeDBModel.v0_0_1_Beta.schema)
       .id()
-      .field(IntersectionNode.v0_0_1_Beta.coordiante, GeometricPoint2D.dataType, .required)
-      .field(IntersectionNode.v0_0_1_Beta.createdAt, .datetime)
-      .field(IntersectionNode.v0_0_1_Beta.updatedAt, .datetime)
-      .field(IntersectionNode.v0_0_1_Beta.deletedAt, .datetime)
-      .unique(on: IntersectionNode.v0_0_1_Beta.coordiante, name: "Intersection node already exists and should be unique")
+      .field(IntersectionNodeDBModel.v0_0_1_Beta.coordiante, GeometricPoint2D.dataType, .required)
+      .field(IntersectionNodeDBModel.v0_0_1_Beta.adjacentInfrastructures, .array(of: .string))
+      .field(IntersectionNodeDBModel.v0_0_1_Beta.createdAt, .datetime)
+      .field(IntersectionNodeDBModel.v0_0_1_Beta.updatedAt, .datetime)
+      .field(IntersectionNodeDBModel.v0_0_1_Beta.deletedAt, .datetime)
+      .unique(on: IntersectionNodeDBModel.v0_0_1_Beta.coordiante, name: "Intersection node already exists and should be unique")
       .create()
   }
   
   func revert(on database: Database) -> EventLoopFuture<Void> {
-    database.schema(IntersectionNode.v0_0_1_Beta.schema).delete()
+    database.schema(IntersectionNodeDBModel.v0_0_1_Beta.schema).delete()
   }
 }
 
-extension IntersectionNode {
+extension IntersectionNodeDBModel {
   enum v0_0_1_Beta {
     static let schema: String = "intersection_nodes"
     static let id = FieldKey(stringLiteral: "id")
