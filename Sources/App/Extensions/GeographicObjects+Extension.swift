@@ -6,7 +6,7 @@
 //
 
 import FluentPostGIS
-import AccessyDataTypes
+
 
 extension GeographicPoint2D {
   init(coordinate: Coordinate) {

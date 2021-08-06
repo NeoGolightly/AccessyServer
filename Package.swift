@@ -12,7 +12,8 @@ let package = Package(
     .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
     .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.0.0"),
     .package(url: "https://github.com/NeoGolightly/fluent-postgis.git", from: "1.0.0"),
-    
+    .package(url: "https://github.com/Quick/Quick.git", from: "4.0.0"),
+    .package(url: "https://github.com/Quick/Nimble.git", from: "9.2.0")
     
   ],
   targets: [
@@ -37,6 +38,8 @@ let package = Package(
       .target(name: "App"),
       .product(name: "XCTVapor", package: "vapor"),
       .product(name: "FluentPostGIS", package: "fluent-postgis"),
+      .product(name: "Quick", package: "Quick"),
+      .product(name: "Nimble", package: "Nimble"),
     ])
   ]
 )

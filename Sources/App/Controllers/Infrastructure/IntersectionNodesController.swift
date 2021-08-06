@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 import FluentPostGIS
-import AccessyDataTypes
+
 
 extension IntersectionNode: Content {}
 

@@ -7,9 +7,9 @@ import FluentPostGIS
 public func configure(_ app: Application) throws {
   // uncomment to serve files from /Public folder
   // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-  print("post: \(Int(Environment.get("PORT") ?? "nil"))")
-  app.http.server.configuration.hostname = Environment.get("HOST_NAME") ?? "0.0.0.0"
-  app.http.server.configuration.port = Int(Environment.get("PORT") ?? "8080") ?? 7070
+  
+  app.http.server.configuration.hostname = Environment.process.HOST_NAME ?? "0.0.0.0"
+  app.http.server.configuration.port = Environment.process.PORT ?? 8080
   
   let databaseName: String
   let databasePort: Int
@@ -41,14 +41,16 @@ public func configure(_ app: Application) throws {
   app.databases.middleware.use(SidewalkMiddleware(), on: .psql)
   app.databases.middleware.use(IntersectionNodeMiddleware(), on: .psql)
 
-  // register routes
-  try routes(app)
+  
     
   if app.environment == .testing || app.environment == .development {
     try app.autoRevert().wait()
   }
-  try app.autoMigrate().wait()
   
+  app.logger.logLevel = .debug
+  try app.autoMigrate().wait()
+  // register routes
+  try routes(app)
 }
 
 

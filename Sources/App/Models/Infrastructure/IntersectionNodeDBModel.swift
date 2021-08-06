@@ -9,7 +9,7 @@ import Vapor
 import Fluent
 import FluentPostGIS
 import WKCodable
-import AccessyDataTypes
+
 
 protocol ResponseConvertable {
   associatedtype ResponseType
