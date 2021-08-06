@@ -150,7 +150,7 @@ import Vapor
 }
 
 
-struct CreateSidewalkResponse{
+struct CreateSidewalkResponse: Content{
   let createdSidewalk: Sidewalk
   let createdIntersectionNodes: [IntersectionNode]
 }

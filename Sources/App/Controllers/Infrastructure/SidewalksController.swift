@@ -35,7 +35,7 @@ struct SidewalksController: RouteCollection{
   
   
   
-  func createHandler(req: Request) throws -> EventLoopFuture<Sidewalk> {
+  func createHandler(req: Request) throws -> EventLoopFuture<CreateSidewalkResponse> {
     let sidewalkRequest = try req.content.decode(CreateSidewalkData.self)
     guard let firstCoordinateInPath = sidewalkRequest.pathCoordinates.first,
           let secondCoordinateInPath = sidewalkRequest.pathCoordinates.last
@@ -49,12 +49,21 @@ struct SidewalksController: RouteCollection{
       .save(on: req.db)
       .flatMap{
         [nodeA, nodeB].flatten(on: req.db.eventLoop)
-          .flatMap{ nodes -> EventLoopFuture<Void> in
+          .flatMap{ nodes -> EventLoopFuture<[IntersectionNodeDBModel]> in
+            //if node has no adjacent infrastructure than it should be a newly created node
+            let newNodes = nodes.filter { $0.adjacentInfrastructures.isEmpty }
+            //add sidewalk id to nodes
             nodes.forEach{ $0.adjacentInfrastructures.append(sidewalk.id!.uuidString) }
-            return nodes.map{ $0.save(on: req.db)}.flatten(on: req.db.eventLoop).map{ nodes }
+            //save new and updated nodes and return newly created ones
+            return nodes.map{ $0.save(on: req.db)}.flatten(on: req.db.eventLoop).map{ newNodes }
           }
       }
-      .transform(to: sidewalk.toResponse())
+      .map({ newNodes in
+        let sidewalkResponse = sidewalk.toResponse()
+        let newIntersectionNodesResponse = newNodes.map{ $0.toResponse() }
+        return CreateSidewalkResponse(createdSidewalk: sidewalkResponse, createdIntersectionNodes: newIntersectionNodesResponse)
+      })
+      
   }
   
   func getOrCreateIntersectionNode(database: Database, nodeCoordinate: GeometricPoint2D) -> EventLoopFuture<IntersectionNodeDBModel> {
